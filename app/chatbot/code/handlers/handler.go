@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
 	"github.com/larksuite/oapi-sdk-go/v3/event/dispatcher/callback"
 	"start-feishubot/initialization"
 	"start-feishubot/services"
@@ -31,7 +32,7 @@ type MessageHandler struct {
 }
 
 func (m MessageHandler) cardHandler(ctx context.Context,
-	event *callback.CardActionTriggerEvent) (*string, error) {
+	event *callback.CardActionTriggerEvent) (*larkcard.MessageCard, error) {
 	messageHandler := NewCardHandler(m)
 	return messageHandler(ctx, event)
 }

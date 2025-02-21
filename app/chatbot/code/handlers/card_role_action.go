@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
 	"github.com/larksuite/oapi-sdk-go/v3/event/dispatcher/callback"
 	"start-feishubot/initialization"
 	"start-feishubot/services"
@@ -10,7 +11,7 @@ import (
 
 func NewRoleTagCardHandler(cardMsg CardMsg,
 	m MessageHandler) CardHandlerFunc {
-	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*string, error) {
+	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*larkcard.MessageCard, error) {
 
 		if cardMsg.Kind == RoleTagsChooseKind {
 			newCard, err, done := CommonProcessRoleTag(cardMsg, event,
@@ -26,7 +27,7 @@ func NewRoleTagCardHandler(cardMsg CardMsg,
 
 func NewRoleCardHandler(cardMsg CardMsg,
 	m MessageHandler) CardHandlerFunc {
-	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*string, error) {
+	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*larkcard.MessageCard, error) {
 
 		if cardMsg.Kind == RoleChooseKind {
 			newCard, err, done := CommonProcessRole(cardMsg, event,
@@ -40,7 +41,7 @@ func NewRoleCardHandler(cardMsg CardMsg,
 	}
 }
 
-func CommonProcessRoleTag(msg CardMsg, event *callback.CardActionTriggerEvent, cache services.SessionServiceCacheInterface) (*string, error, bool) {
+func CommonProcessRoleTag(msg CardMsg, event *callback.CardActionTriggerEvent, cache services.SessionServiceCacheInterface) (*larkcard.MessageCard, error, bool) {
 	option := event.Event.Action.Option
 	//replyMsg(context.Background(), "已选择tag:"+option,
 	//	&msg.MsgId)
@@ -51,7 +52,7 @@ func CommonProcessRoleTag(msg CardMsg, event *callback.CardActionTriggerEvent, c
 	return nil, nil, true
 }
 
-func CommonProcessRole(msg CardMsg, event *callback.CardActionTriggerEvent, cache services.SessionServiceCacheInterface) (*string, error, bool) {
+func CommonProcessRole(msg CardMsg, event *callback.CardActionTriggerEvent, cache services.SessionServiceCacheInterface) (*larkcard.MessageCard, error, bool) {
 	option := event.Event.Action.Option
 	contentByTitle, error := initialization.GetFirstRoleContentByTitle(option)
 	if error != nil {

@@ -8,7 +8,7 @@ import (
 )
 
 func NewPicResolutionHandler(cardMsg CardMsg, m MessageHandler) CardHandlerFunc {
-	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*string, error) {
+	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*larkcard.MessageCard, error) {
 		if cardMsg.Kind == PicResolutionKind {
 			CommonProcessPicResolution(cardMsg, event, m.sessionCache)
 			return nil, nil
@@ -18,7 +18,7 @@ func NewPicResolutionHandler(cardMsg CardMsg, m MessageHandler) CardHandlerFunc 
 }
 
 func NewPicModeChangeHandler(cardMsg CardMsg, m MessageHandler) CardHandlerFunc {
-	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*string, error) {
+	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*larkcard.MessageCard, error) {
 		if cardMsg.Kind == PicModeChangeKind {
 			newCard, err, done := CommonProcessPicModeChange(cardMsg, m.sessionCache)
 			if done {
@@ -30,7 +30,7 @@ func NewPicModeChangeHandler(cardMsg CardMsg, m MessageHandler) CardHandlerFunc 
 	}
 }
 func NewPicTextMoreHandler(cardMsg CardMsg, m MessageHandler) CardHandlerFunc {
-	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*string, error) {
+	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*larkcard.MessageCard, error) {
 		if cardMsg.Kind == PicTextMoreKind {
 			go func() {
 				m.CommonProcessPicMore(cardMsg)
@@ -62,7 +62,7 @@ func (m MessageHandler) CommonProcessPicMore(msg CardMsg) {
 
 func CommonProcessPicModeChange(cardMsg CardMsg,
 	session services.SessionServiceCacheInterface) (
-	*string, error, bool) {
+	*larkcard.MessageCard, error, bool) {
 	if cardMsg.Value == "1" {
 
 		sessionId := cardMsg.SessionId
@@ -77,17 +77,16 @@ func CommonProcessPicModeChange(cardMsg CardMsg,
 				withHeader("🖼️ 已进入图片创作模式", larkcard.TemplateBlue),
 				withPicResolutionBtn(&sessionId),
 				withNote("提醒：回复文本或图片，让AI生成相关的图片。"))
-		newCardPtr := &newCard
-		return newCardPtr, nil, true
+		return newCard, nil, true
 	}
 	if cardMsg.Value == "0" {
 		newCard, _ := newSendCard(
-			withHeader("️🎒 机器人提醒", larkcard.TemplateGreen),
+			withHeader("️🎒 DeepSeek友情提示", larkcard.TemplateGreen),
 			withMainMd("依旧保留此话题的上下文信息"),
 			withNote("我们可以继续探讨这个话题,期待和您聊天。如果您有其他问题或者想要讨论的话题，请告诉我哦"),
 		)
-		newCardPtr := &newCard
-		return newCardPtr, nil, true
+
+		return newCard, nil, true
 	}
 	return nil, nil, false
 }
