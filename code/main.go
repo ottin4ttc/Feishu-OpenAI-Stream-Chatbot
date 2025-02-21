@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"github.com/ottin4ttc/go_common/db"
 	"io"
 	"log"
 	"os"
+	"start-feishubot/dal/dsDb"
 	"start-feishubot/handlers"
 	"start-feishubot/initialization"
 	"start-feishubot/services/openai"
@@ -26,10 +27,14 @@ func main() {
 	initialization.InitRoleList()
 	pflag.Parse()
 	globalConfig := initialization.GetConfig()
+	err := dsDb.InitAwsPostgreSQL(context.Background(), db.PostgreSQLConfig{DSN: globalConfig.Dsn})
+	if err != nil {
+		panic(err)
+	}
 
 	// 打印一下实际读取到的配置
-	globalConfigPrettyString, _ := json.MarshalIndent(globalConfig, "", "    ")
-	log.Println(string(globalConfigPrettyString))
+	//globalConfigPrettyString, _ := json.MarshalIndent(globalConfig, "", "    ")
+	//log.Println(string(globalConfigPrettyString))
 
 	gpt := openai.NewChatGPT(*globalConfig)
 	handlers.InitHandlers(gpt, *globalConfig)
@@ -46,7 +51,7 @@ func main() {
 			return handlers.ReadHandler(ctx, event)
 		}).
 		OnP2CardActionTrigger(func(ctx context.Context, event *callback.CardActionTriggerEvent) (*callback.CardActionTriggerResponse, error) {
-			fmt.Printf("[ OnP2CardActionTrigger access ], data: %s\n", larkcore.Prettify(event))
+			//fmt.Printf("[ OnP2CardActionTrigger access ], data: %s\n", larkcore.Prettify(event))
 			return handlers.CardHandler(ctx, event)
 		}).
 		// 监听「拉取链接预览数据 url.preview.get」
@@ -56,7 +61,7 @@ func main() {
 		})
 	initialization.LoadLarkWsClient(*globalConfig, eventHandler)
 	initialization.LoadLarkClient(*globalConfig)
-	err := initialization.GetLarkWsClient().Start(context.Background())
+	err = initialization.GetLarkWsClient().Start(context.Background())
 	if err != nil {
 		panic(err)
 	}

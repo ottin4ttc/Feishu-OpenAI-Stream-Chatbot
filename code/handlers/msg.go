@@ -603,13 +603,7 @@ func sendMsg(ctx context.Context, msg string, chatId *string) error {
 
 func PatchCard(ctx context.Context, msgId *string,
 	cardContent string) error {
-	//fmt.Println("sendMsg", msg, chatId)
 	client := initialization.GetLarkClient()
-	//content := larkim.NewTextMsgBuilder().
-	//	Text(msg).
-	//	Build()
-
-	//fmt.Println("content", content)
 
 	resp, err := client.Im.Message.Patch(ctx, larkim.NewPatchMessageReqBuilder().
 		MessageId(*msgId).
