@@ -1,0 +1,1 @@
+go build && ENV=int  ./start-feishubot
