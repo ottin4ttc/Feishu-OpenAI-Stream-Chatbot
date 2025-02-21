@@ -1,1 +1,1 @@
-go build && ENV=int  ./start-feishubot
+go build && ENV=prod  ./start-feishubot
