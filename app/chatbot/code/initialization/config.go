@@ -2,7 +2,6 @@ package initialization
 
 import (
 	"fmt"
-	"github.com/spf13/pflag"
 	"os"
 	"strconv"
 	"strings"
@@ -20,6 +19,7 @@ type Config struct {
 	FeishuAppEncryptKey                string
 	FeishuAppVerificationToken         string
 	FeishuBotName                      string
+	FeishuUnionId                      string
 	OpenaiApiKeys                      []string
 	HttpPort                           int
 	HttpsPort                          int
@@ -37,10 +37,10 @@ type Config struct {
 	AccessControlMaxCountPerUserPerDay int
 	OpenAIHttpClientTimeOut            int
 	OpenaiModel                        string
+	Dsn                                string
 }
 
 var (
-	cfg    = pflag.StringP("config", "c", "./config.yaml", "apiserver config file path.")
 	config *Config
 	once   sync.Once
 )
@@ -49,9 +49,16 @@ var (
 GetConfig will call LoadConfig once and return a global singleton, you should always use this function to get config
 */
 func GetConfig() *Config {
+	env := os.Getenv("ENV")
+	cfg := ""
+	if env == "prod" {
+		cfg = "./config.yaml"
+	} else {
+		cfg = "./config_int.yaml"
+	}
 
 	once.Do(func() {
-		config = LoadConfig(*cfg)
+		config = LoadConfig(cfg)
 		config.Initialized = true
 	})
 
@@ -79,6 +86,7 @@ func LoadConfig(cfg string) *Config {
 		FeishuAppEncryptKey:                getViperStringValue("APP_ENCRYPT_KEY", ""),
 		FeishuAppVerificationToken:         getViperStringValue("APP_VERIFICATION_TOKEN", ""),
 		FeishuBotName:                      getViperStringValue("BOT_NAME", ""),
+		FeishuUnionId:                      getViperStringValue("UNION_ID", ""),
 		OpenaiApiKeys:                      getViperStringArray("OPENAI_KEY", nil),
 		HttpPort:                           getViperIntValue("HTTP_PORT", 9000),
 		HttpsPort:                          getViperIntValue("HTTPS_PORT", 9001),
@@ -96,6 +104,7 @@ func LoadConfig(cfg string) *Config {
 		AccessControlMaxCountPerUserPerDay: getViperIntValue("ACCESS_CONTROL_MAX_COUNT_PER_USER_PER_DAY", 0),
 		OpenAIHttpClientTimeOut:            getViperIntValue("OPENAI_HTTP_CLIENT_TIMEOUT", 550),
 		OpenaiModel:                        getViperStringValue("OPENAI_MODEL", "gpt-3.5-turbo"),
+		Dsn:                                getViperStringValue("DSN", ""),
 	}
 
 	return config

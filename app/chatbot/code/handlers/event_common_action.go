@@ -22,9 +22,10 @@ type MsgInfo struct {
 	mention     []*larkim.MentionEvent
 }
 type ActionInfo struct {
-	handler *MessageHandler
-	ctx     *context.Context
-	info    *MsgInfo
+	handler      *MessageHandler
+	ctx          *context.Context
+	info         *MsgInfo
+	messageEvent *larkim.P2MessageReceiveV1
 }
 
 type Action interface {

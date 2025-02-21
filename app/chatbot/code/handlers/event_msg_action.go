@@ -1,16 +1,22 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/k0kubun/pp/v3"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/ottin4ttc/go_common/db"
 	"log"
+	"start-feishubot/dal/dsDb"
 	"start-feishubot/initialization"
+	"start-feishubot/model"
 	"start-feishubot/services/accesscontrol"
 	"start-feishubot/services/chatgpt"
 	"start-feishubot/services/openai"
 	"strings"
 	"time"
+
+	"github.com/k0kubun/pp/v3"
 )
 
 type MessageAction struct { /*消息*/
@@ -29,12 +35,6 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 		_ = sendMsg(*a.ctx, msg, a.info.chatId)
 		return false
 	}
-
-	//s := "快速响应，用于测试： " + time.Now().String() +
-	//	" accesscontrol.currentDate " + accesscontrol.GetCurrentDateFlag()
-	//_ = sendMsg(*a.ctx, s, a.info.chatId)
-	//log.Println(s)
-	//return false
 
 	cardId, err2 := sendOnProcess(a)
 	if err2 != nil {
@@ -107,7 +107,6 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 			}
 			noContentTimeout.Stop()
 			answer += res
-			//pp.Println("answer", answer)
 		case <-done: // 添加 done 信号的处理
 			err := updateFinalCard(*a.ctx, answer, cardId)
 			if err != nil {
@@ -126,17 +125,53 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 			//	//updateNewTextCard(*a.ctx, a.info.sessionId, a.info.msgId,
 			//	//	completions.Content)
 			//}
-			log.Printf("\n\n\n")
-			log.Printf("Success request: UserId: %s , Request: %s , Response: %s", a.info.userId, msg, answer)
+
 			jsonByteArray, err := json.Marshal(msg)
 			if err != nil {
 				log.Printf("Error marshaling JSON request: UserId: %s , Request: %s , Response: %s", a.info.userId, jsonByteArray, answer)
 			}
 			jsonStr := strings.ReplaceAll(string(jsonByteArray), "\\n", "")
 			jsonStr = strings.ReplaceAll(jsonStr, "\n", "")
-			log.Printf("\n\n\n")
-			log.Printf("Success request plain jsonStr: UserId: %s , Request: %s , Response: %s",
-				a.info.userId, jsonStr, answer)
+			// 将双向消息都存入数据库
+			askMessage := &model.DsMessage{
+				AppID:     a.messageEvent.EventV2Base.Header.AppID,
+				TenantID:  a.messageEvent.EventV2Base.Header.TenantKey,
+				UnionID:   *a.messageEvent.Event.Sender.SenderId.UnionId,
+				UserID:    *a.messageEvent.Event.Sender.SenderId.UserId,
+				SendType:  *a.messageEvent.Event.Sender.SenderType,
+				MessageID: *a.messageEvent.Event.Message.MessageId,
+				ChatID:    *a.messageEvent.Event.Message.ChatId,
+				ChatType:  *a.messageEvent.Event.Message.ChatType,
+				Content:   a.info.qParsed,
+			}
+			if a.messageEvent.Event.Message.RootId != nil {
+				askMessage.RootID = *a.messageEvent.Event.Message.RootId
+			}
+			if a.messageEvent.Event.Message.ParentId != nil {
+				askMessage.ParentID = *a.messageEvent.Event.Message.ParentId
+			}
+			jsonContent, _ := jsoniter.MarshalToString(a.messageEvent.Event)
+			askMessage.EventJSON = jsonContent
+			// reply
+			replyMessage := &model.DsMessage{
+				AppID:    a.messageEvent.EventV2Base.Header.AppID,
+				TenantID: a.messageEvent.EventV2Base.Header.TenantKey,
+				UnionID:  initialization.GetConfig().FeishuUnionId,
+				SendType: askMessage.SendType,
+				ChatType: askMessage.ChatType,
+				ChatID:   askMessage.ChatID,
+				Content:  answer,
+				RootID:   askMessage.RootID,
+				ParentID: askMessage.MessageID,
+			}
+			ctx := context.Background()
+			err = dsDb.NewDsMessageDao(context.Background(), db.GetPostgreSQL(ctx)).BatchCreate([]*model.DsMessage{askMessage, replyMessage})
+			if err != nil {
+				printErrorMessage(a, msg, err)
+			} else {
+				log.Printf("Success request plain jsonStr: UserId: %s , Request: %s , Response: %s",
+					a.info.userId, jsonStr, answer)
+			}
 			return false
 		}
 	}

@@ -55,7 +55,6 @@ func (m MessageHandler) msgReceivedHandler(ctx context.Context, event *larkim.P2
 		fmt.Println("unknown chat type")
 		return nil
 	}
-	//fmt.Println(larkcore.Prettify(event.Event.Message))
 
 	msgType, err := judgeMsgType(event)
 	if err != nil {
@@ -86,9 +85,10 @@ func (m MessageHandler) msgReceivedHandler(ctx context.Context, event *larkim.P2
 		mention:     mention,
 	}
 	data := &ActionInfo{
-		ctx:     &ctx,
-		handler: &m,
-		info:    &msgInfo,
+		ctx:          &ctx,
+		handler:      &m,
+		info:         &msgInfo,
+		messageEvent: event,
 	}
 	actions := []Action{
 		&ProcessedUniqueAction{}, //避免重复处理
