@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/sashabaranov/go-openai"
 	"io"
 	"start-feishubot/initialization"
 	customOpenai "start-feishubot/services/openai"
+
+	"github.com/ottin4ttc/go-openai"
 )
 
 type Messages struct {
@@ -39,7 +40,7 @@ func (c *ChatGPT) StreamChat(ctx context.Context,
 			Content: m.Content,
 		}
 	}
-	return c.StreamChatWithHistory(ctx, chatMsgs, 2000,
+	return c.StreamChatWithHistory(ctx, chatMsgs, 8092,
 		responseStream)
 }
 
@@ -47,7 +48,7 @@ func (c *ChatGPT) StreamChatWithHistory(ctx context.Context, msg []openai.ChatCo
 	responseStream chan string,
 ) error {
 	config := openai.DefaultConfig(c.config.OpenaiApiKeys[0])
-	config.BaseURL = c.config.OpenaiApiUrl + "/v1"
+	config.BaseURL = c.config.OpenaiApiUrl
 
 	proxyClient, parseProxyError := customOpenai.GetProxyClient(c.config.HttpProxy)
 	if parseProxyError != nil {
@@ -73,18 +74,29 @@ func (c *ChatGPT) StreamChatWithHistory(ctx context.Context, msg []openai.ChatCo
 	}
 
 	defer stream.Close()
+	isInReasoningContent := false
 	for {
 		response, err := stream.Recv()
 		if errors.Is(err, io.EOF) {
-			//fmt.Println("Stream finished")
 			return nil
 		}
 		if err != nil {
 			fmt.Printf("Stream error: %v\n", err)
 			return err
 		}
-		responseStream <- response.Choices[0].Delta.Content
-	}
-	return nil
 
+		if response.Choices[0].Delta.ReasoningContent != "" {
+			if !isInReasoningContent {
+				responseStream <- "\n<think>\n"
+				isInReasoningContent = true
+			}
+			responseStream <- response.Choices[0].Delta.ReasoningContent
+		} else {
+			if isInReasoningContent {
+				responseStream <- "\n</think>\n"
+				isInReasoningContent = false
+			}
+			responseStream <- response.Choices[0].Delta.Content
+		}
+	}
 }
