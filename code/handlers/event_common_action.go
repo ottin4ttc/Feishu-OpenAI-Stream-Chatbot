@@ -79,7 +79,7 @@ type ClearAction struct { /*清除消息*/
 
 func (*ClearAction) Execute(a *ActionInfo) bool {
 	if _, foundClear := utils.EitherTrimEqual(a.info.qParsed,
-		"/clear", "清除"); foundClear {
+		"/clear", "清除", "开始新会话"); foundClear {
 		sendClearCacheCheckCard(*a.ctx, a.info.sessionId,
 			a.info.msgId)
 		return false
@@ -92,7 +92,7 @@ type RolePlayAction struct { /*角色扮演*/
 
 func (*RolePlayAction) Execute(a *ActionInfo) bool {
 	if system, foundSystem := utils.EitherCutPrefix(a.info.qParsed,
-		"/system ", "角色扮演 "); foundSystem {
+		"/system ", "角色扮演"); foundSystem {
 		a.handler.sessionCache.Clear(*a.info.sessionId)
 		systemMsg := append([]openai.Messages{}, openai.Messages{
 			Role: "system", Content: system,
