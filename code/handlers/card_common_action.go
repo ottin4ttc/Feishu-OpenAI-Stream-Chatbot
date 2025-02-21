@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
 	"github.com/larksuite/oapi-sdk-go/v3/event/dispatcher/callback"
 )
 
 type CardHandlerMeta func(cardMsg CardMsg, m MessageHandler) CardHandlerFunc
 
 type CardHandlerFunc func(ctx context.Context, event *callback.CardActionTriggerEvent) (
-	*string, error)
+	*larkcard.MessageCard, error)
 
 var ErrNextHandler = fmt.Errorf("next handler")
 
@@ -24,7 +25,7 @@ func NewCardHandler(m MessageHandler) CardHandlerFunc {
 		NewRoleCardHandler,
 	}
 
-	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*string, error) {
+	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*larkcard.MessageCard, error) {
 		var cardMsg CardMsg
 
 		actionValue := event.Event.Action.Value

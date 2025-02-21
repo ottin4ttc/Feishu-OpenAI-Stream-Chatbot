@@ -47,8 +47,9 @@ type MenuOption struct {
 
 func replyCard(ctx context.Context,
 	msgId *string,
-	cardContent string,
+	lc *larkcard.MessageCard,
 ) error {
+	cardContent, _ := lc.String()
 	client := initialization.GetLarkClient()
 	resp, err := client.Im.Message.Reply(ctx, larkim.NewReplyMessageReqBuilder().
 		MessageId(*msgId).
@@ -105,7 +106,7 @@ func replyCardWithBackId(ctx context.Context,
 	return resp.Data.MessageId, nil
 }
 
-func newSendCard(header *larkcard.MessageCardHeader, elements ...larkcard.MessageCardElement) (string, error) {
+func newSendCard(header *larkcard.MessageCardHeader, elements ...larkcard.MessageCardElement) (*larkcard.MessageCard, error) {
 	config := larkcard.NewMessageCardConfig().
 		WideScreenMode(false).
 		EnableForward(true).
@@ -116,14 +117,13 @@ func newSendCard(header *larkcard.MessageCardHeader, elements ...larkcard.Messag
 		aElementPool = append(aElementPool, element)
 	}
 	// 卡片消息体
-	cardContent, err := larkcard.NewMessageCard().
+	cardContent := larkcard.NewMessageCard().
 		Config(config).
 		Header(header).
 		Elements(
 			aElementPool,
-		).
-		String()
-	return cardContent, err
+		).Build()
+	return cardContent, nil
 }
 func newSendCardWithOutHeader(
 	elements ...larkcard.MessageCardElement) (string, error) {
@@ -147,8 +147,7 @@ func newSendCardWithOutHeader(
 }
 
 func newSimpleSendCard(
-	elements ...larkcard.MessageCardElement) (string,
-	error) {
+	elements ...larkcard.MessageCardElement) (*larkcard.MessageCard, error) {
 	config := larkcard.NewMessageCardConfig().
 		WideScreenMode(false).
 		EnableForward(true).
@@ -159,13 +158,12 @@ func newSimpleSendCard(
 		aElementPool = append(aElementPool, element)
 	}
 	// 卡片消息体
-	cardContent, err := larkcard.NewMessageCard().
+	cardContent := larkcard.NewMessageCard().
 		Config(config).
 		Elements(
 			aElementPool,
-		).
-		String()
-	return cardContent, err
+		).Build()
+	return cardContent, nil
 }
 
 // withSplitLine 用于生成分割线
@@ -179,7 +177,7 @@ func withSplitLine() larkcard.MessageCardElement {
 func withHeader(title string, color string) *larkcard.
 	MessageCardHeader {
 	if title == "" {
-		title = "🤖️机器人提醒"
+		title = "🤖️DeepSeek友情提示"
 	}
 	header := larkcard.NewMessageCardHeader().
 		Template(color).
@@ -637,7 +635,7 @@ func PatchCard(ctx context.Context, msgId *string,
 func sendClearCacheCheckCard(ctx context.Context,
 	sessionId *string, msgId *string) {
 	newCard, _ := newSendCard(
-		withHeader("🆑 机器人提醒", larkcard.TemplateBlue),
+		withHeader("🆑 DeepSeek友情提示", larkcard.TemplateBlue),
 		withMainMd("您确定要清除对话上下文吗？"),
 		withNote("请注意，这将开始一个全新的对话，您将无法利用之前话题的历史信息"),
 		withClearDoubleCheckBtn(sessionId))

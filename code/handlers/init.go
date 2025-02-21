@@ -12,7 +12,7 @@ import (
 
 type MessageHandlerInterface interface {
 	msgReceivedHandler(ctx context.Context, event *larkim.P2MessageReceiveV1) error
-	cardHandler(ctx context.Context, event *callback.CardActionTriggerEvent) (*string, error)
+	cardHandler(ctx context.Context, event *callback.CardActionTriggerEvent) (*larkcard.MessageCard, error)
 }
 
 type HandlerType string
@@ -40,18 +40,16 @@ func ReadHandler(ctx context.Context, event *larkim.P2MessageReadV1) error {
 }
 
 func CardHandler(ctx context.Context, event *callback.CardActionTriggerEvent) (*callback.CardActionTriggerResponse, error) {
-	content, err := handlers.cardHandler(ctx, event)
+	larkMsgCard, err := handlers.cardHandler(ctx, event)
 	if err != nil {
 		return nil, err
 	}
 
-	card := &callback.Card{
+	callbackCard := &callback.Card{
 		Type: "raw",
-		Data: content,
+		Data: larkMsgCard,
 	}
-
-	return &callback.CardActionTriggerResponse{Card: card}, nil
-
+	return &callback.CardActionTriggerResponse{Card: callbackCard}, nil
 }
 
 func judgeCardType(cardAction *larkcard.CardAction) HandlerType {
