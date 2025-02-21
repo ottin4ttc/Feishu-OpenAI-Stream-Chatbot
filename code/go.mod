@@ -2,20 +2,20 @@ module start-feishubot
 
 go 1.18
 
-require github.com/larksuite/oapi-sdk-go/v3 v3.0.14
+require github.com/larksuite/oapi-sdk-go/v3 v3.4.10
 
 require (
 	github.com/duke-git/lancet/v2 v2.1.17
 	github.com/gin-gonic/gin v1.8.2
 	github.com/google/uuid v1.3.0
 	github.com/k0kubun/pp/v3 v3.2.0
-	github.com/larksuite/oapi-sdk-gin v1.0.0
 	github.com/pandodao/tokenizer-go v0.2.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pion/opus v0.0.0-20230123082803-1052c3e89e58
 	github.com/sashabaranov/go-openai v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.14.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -30,7 +30,9 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/pprof v0.0.0-20230309165930-d61513b1440d // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
@@ -54,6 +56,5 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

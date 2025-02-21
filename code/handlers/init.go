@@ -6,12 +6,13 @@ import (
 	"start-feishubot/services/openai"
 
 	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
+	"github.com/larksuite/oapi-sdk-go/v3/event/dispatcher/callback"
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 )
 
 type MessageHandlerInterface interface {
 	msgReceivedHandler(ctx context.Context, event *larkim.P2MessageReceiveV1) error
-	cardHandler(ctx context.Context, cardAction *larkcard.CardAction) (interface{}, error)
+	cardHandler(ctx context.Context, event *callback.CardActionTriggerEvent) (*string, error)
 }
 
 type HandlerType string
@@ -38,12 +39,18 @@ func ReadHandler(ctx context.Context, event *larkim.P2MessageReadV1) error {
 	return nil
 }
 
-func CardHandler() func(ctx context.Context,
-	cardAction *larkcard.CardAction) (interface{}, error) {
-	return func(ctx context.Context, cardAction *larkcard.CardAction) (interface{}, error) {
-		//handlerType := judgeCardType(cardAction)
-		return handlers.cardHandler(ctx, cardAction)
+func CardHandler(ctx context.Context, event *callback.CardActionTriggerEvent) (*callback.CardActionTriggerResponse, error) {
+	content, err := handlers.cardHandler(ctx, event)
+	if err != nil {
+		return nil, err
 	}
+	toast := &callback.Toast{
+		Type:        "info",
+		Content:     *content,
+		I18nContent: nil,
+	}
+	return &callback.CardActionTriggerResponse{Toast: toast}, nil
+
 }
 
 func judgeCardType(cardAction *larkcard.CardAction) HandlerType {
