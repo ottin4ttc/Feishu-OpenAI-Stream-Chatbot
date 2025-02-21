@@ -11,7 +11,7 @@ import (
 
 func TestChatGPT_streamChat(t *testing.T) {
 	// 初始化配置
-	config := initialization.LoadConfig("../../config.yaml")
+	config := initialization.LoadConfig("../../config_int.yaml")
 
 	// 准备测试用例
 	testCases := []struct {

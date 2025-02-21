@@ -52,9 +52,9 @@ func GetConfig() *Config {
 	env := os.Getenv("ENV")
 	cfg := ""
 	if env == "prod" {
-		cfg = "./config.yaml"
-	} else {
 		cfg = "./config_int.yaml"
+	} else {
+		cfg = "./config.yaml"
 	}
 
 	once.Do(func() {
@@ -73,7 +73,7 @@ func LoadConfig(cfg string) *Config {
 	viper.SetConfigFile(cfg)
 	viper.ReadInConfig()
 	viper.AutomaticEnv()
-	//content, err := ioutil.ReadFile("config.yaml")
+	//content, err := ioutil.ReadFile("config_int.yaml")
 	//if err != nil {
 	//	fmt.Println("Error reading file:", err)
 	//}
