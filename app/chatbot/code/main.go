@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
-	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
-	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"log"
 	"os"
@@ -15,12 +12,14 @@ import (
 	"start-feishubot/services/openai"
 	"start-feishubot/utils"
 
-	"github.com/gin-gonic/gin"
+	larkcore "github.com/larksuite/oapi-sdk-go/v3/core"
+	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
+	"gopkg.in/natefinch/lumberjack.v2"
+
 	"github.com/spf13/pflag"
 
-	sdkginext "github.com/larksuite/oapi-sdk-gin"
-
 	"github.com/larksuite/oapi-sdk-go/v3/event/dispatcher"
+	"github.com/larksuite/oapi-sdk-go/v3/event/dispatcher/callback"
 )
 
 func main() {
@@ -32,7 +31,6 @@ func main() {
 	globalConfigPrettyString, _ := json.MarshalIndent(globalConfig, "", "    ")
 	log.Println(string(globalConfigPrettyString))
 
-	initialization.LoadLarkClient(*globalConfig)
 	gpt := openai.NewChatGPT(*globalConfig)
 	handlers.InitHandlers(gpt, *globalConfig)
 
@@ -46,29 +44,22 @@ func main() {
 		OnP2MessageReceiveV1(handlers.Handler).
 		OnP2MessageReadV1(func(ctx context.Context, event *larkim.P2MessageReadV1) error {
 			return handlers.ReadHandler(ctx, event)
+		}).
+		OnP2CardActionTrigger(func(ctx context.Context, event *callback.CardActionTriggerEvent) (*callback.CardActionTriggerResponse, error) {
+			fmt.Printf("[ OnP2CardActionTrigger access ], data: %s\n", larkcore.Prettify(event))
+			return handlers.CardHandler(ctx, event)
+		}).
+		// 监听「拉取链接预览数据 url.preview.get」
+		OnP2CardURLPreviewGet(func(ctx context.Context, event *callback.URLPreviewGetEvent) (*callback.URLPreviewGetResponse, error) {
+			fmt.Printf("[ OnP2URLPreviewAction access ], data: %s\n", larkcore.Prettify(event))
+			return nil, nil
 		})
-
-	cardHandler := larkcard.NewCardActionHandler(
-		globalConfig.FeishuAppVerificationToken, globalConfig.FeishuAppEncryptKey,
-		handlers.CardHandler())
-
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.POST("/webhook/event",
-		sdkginext.NewEventHandlerFunc(eventHandler))
-	r.POST("/webhook/card",
-		sdkginext.NewCardActionHandlerFunc(
-			cardHandler))
-
-	err := initialization.StartServer(*globalConfig, r)
+	initialization.LoadLarkWsClient(*globalConfig, eventHandler)
+	initialization.LoadLarkClient(*globalConfig)
+	err := initialization.GetLarkWsClient().Start(context.Background())
 	if err != nil {
-		log.Fatalf("failed to start server: %v", err)
+		panic(err)
 	}
-
 }
 
 func enableLog() *lumberjack.Logger {

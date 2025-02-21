@@ -3,13 +3,12 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"github.com/larksuite/oapi-sdk-go/v3/event/dispatcher/callback"
 	"start-feishubot/initialization"
 	"start-feishubot/services"
 	"start-feishubot/services/chatgpt"
 	"start-feishubot/services/openai"
 	"strings"
-
-	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
 
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 )
@@ -32,9 +31,9 @@ type MessageHandler struct {
 }
 
 func (m MessageHandler) cardHandler(ctx context.Context,
-	cardAction *larkcard.CardAction) (interface{}, error) {
+	event *callback.CardActionTriggerEvent) (*string, error) {
 	messageHandler := NewCardHandler(m)
-	return messageHandler(ctx, cardAction)
+	return messageHandler(ctx, event)
 }
 
 func judgeMsgType(event *larkim.P2MessageReceiveV1) (string, error) {

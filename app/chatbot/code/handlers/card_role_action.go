@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
+	"github.com/larksuite/oapi-sdk-go/v3/event/dispatcher/callback"
 	"start-feishubot/initialization"
 	"start-feishubot/services"
 	"start-feishubot/services/openai"
@@ -10,10 +10,10 @@ import (
 
 func NewRoleTagCardHandler(cardMsg CardMsg,
 	m MessageHandler) CardHandlerFunc {
-	return func(ctx context.Context, cardAction *larkcard.CardAction) (interface{}, error) {
+	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*string, error) {
 
 		if cardMsg.Kind == RoleTagsChooseKind {
-			newCard, err, done := CommonProcessRoleTag(cardMsg, cardAction,
+			newCard, err, done := CommonProcessRoleTag(cardMsg, event,
 				m.sessionCache)
 			if done {
 				return newCard, err
@@ -26,10 +26,10 @@ func NewRoleTagCardHandler(cardMsg CardMsg,
 
 func NewRoleCardHandler(cardMsg CardMsg,
 	m MessageHandler) CardHandlerFunc {
-	return func(ctx context.Context, cardAction *larkcard.CardAction) (interface{}, error) {
+	return func(ctx context.Context, event *callback.CardActionTriggerEvent) (*string, error) {
 
 		if cardMsg.Kind == RoleChooseKind {
-			newCard, err, done := CommonProcessRole(cardMsg, cardAction,
+			newCard, err, done := CommonProcessRole(cardMsg, event,
 				m.sessionCache)
 			if done {
 				return newCard, err
@@ -40,10 +40,8 @@ func NewRoleCardHandler(cardMsg CardMsg,
 	}
 }
 
-func CommonProcessRoleTag(msg CardMsg, cardAction *larkcard.CardAction,
-	cache services.SessionServiceCacheInterface) (interface{},
-	error, bool) {
-	option := cardAction.Action.Option
+func CommonProcessRoleTag(msg CardMsg, event *callback.CardActionTriggerEvent, cache services.SessionServiceCacheInterface) (*string, error, bool) {
+	option := event.Event.Action.Option
 	//replyMsg(context.Background(), "已选择tag:"+option,
 	//	&msg.MsgId)
 	roles := initialization.GetTitleListByTag(option)
@@ -53,10 +51,8 @@ func CommonProcessRoleTag(msg CardMsg, cardAction *larkcard.CardAction,
 	return nil, nil, true
 }
 
-func CommonProcessRole(msg CardMsg, cardAction *larkcard.CardAction,
-	cache services.SessionServiceCacheInterface) (interface{},
-	error, bool) {
-	option := cardAction.Action.Option
+func CommonProcessRole(msg CardMsg, event *callback.CardActionTriggerEvent, cache services.SessionServiceCacheInterface) (*string, error, bool) {
+	option := event.Event.Action.Option
 	contentByTitle, error := initialization.GetFirstRoleContentByTitle(option)
 	if error != nil {
 		return nil, error, true
