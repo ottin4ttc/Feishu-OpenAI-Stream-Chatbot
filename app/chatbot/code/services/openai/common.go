@@ -244,7 +244,7 @@ func (gpt *ChatGPT) FullUrl(suffix string) string {
 			gpt.AzureConfig.ResourceName, gpt.AzureConfig.BaseURL,
 			gpt.AzureConfig.DeploymentName, suffix, gpt.AzureConfig.ApiVersion)
 	case OpenAI:
-		url = fmt.Sprintf("%s/v1/%s", gpt.ApiUrl, suffix)
+		url = fmt.Sprintf("%s/%s", gpt.ApiUrl, suffix)
 	}
 	return url
 }

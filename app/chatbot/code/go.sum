@@ -205,6 +205,10 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
+github.com/ottin4ttc/go-openai v0.0.0-20250221061334-da132a5a91e3 h1:Vg+0v/mBVFuWiqqxiMinGqZ1okdUv0hMhcBu1xVLU8M=
+github.com/ottin4ttc/go-openai v0.0.0-20250221061334-da132a5a91e3/go.mod h1:OWuncV/ycOPsz1awAzRJcPyHTKIziPIl9EMeXfFW7rg=
+github.com/ottin4ttc/go-openai v0.0.0-20250221062426-d27341820d1c h1:RUFCMyHXvmZPAzjuVMm4x+obZxxNPu2AWmJo8wgtKck=
+github.com/ottin4ttc/go-openai v0.0.0-20250221062426-d27341820d1c/go.mod h1:OWuncV/ycOPsz1awAzRJcPyHTKIziPIl9EMeXfFW7rg=
 github.com/pandodao/tokenizer-go v0.2.0 h1:NhfI8fGvQkDld2cZCag6NEU3pJ/ugU9zoY1R/zi9YCs=
 github.com/pandodao/tokenizer-go v0.2.0/go.mod h1:t6qFbaleKxbv0KNio2XUN/mfGM5WKv4haPXDQWVDG00=
 github.com/patrickmn/go-cache v2.1.0+incompatible h1:HRMgzkcYKYpi3C8ajMPV8OFXaaRUnok+kx1WdO15EQc=
@@ -225,8 +229,8 @@ github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFR
 github.com/rogpeppe/go-internal v1.6.1/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
 github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUAtL9R8=
 github.com/rogpeppe/go-internal v1.8.0/go.mod h1:WmiCO8CzOY8rg0OYDC4/i/2WRWAB6poM+XZ2dLUbcbE=
-github.com/sashabaranov/go-openai v1.7.0 h1:D1dBXoZhtf/aKNu6WFf0c7Ah2NM30PZ/3Mqly6cZ7fk=
-github.com/sashabaranov/go-openai v1.7.0/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
+github.com/sashabaranov/go-openai v1.37.0 h1:hQQowgYm4OXJ1Z/wTrE+XZaO20BYsL0R3uRPSpfNZkY=
+github.com/sashabaranov/go-openai v1.37.0/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/spf13/afero v1.9.3 h1:41FoI0fD7OR7mGcKE/aOiLkGreyf8ifIOQmJANWogMk=
 github.com/spf13/afero v1.9.3/go.mod h1:iUV7ddyEEZPO5gA3zD4fJt6iStLlL+Lg4m2cihcDf8Y=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=

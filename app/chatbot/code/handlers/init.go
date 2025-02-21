@@ -44,12 +44,13 @@ func CardHandler(ctx context.Context, event *callback.CardActionTriggerEvent) (*
 	if err != nil {
 		return nil, err
 	}
-	toast := &callback.Toast{
-		Type:        "info",
-		Content:     *content,
-		I18nContent: nil,
+
+	card := &callback.Card{
+		Type: "raw",
+		Data: content,
 	}
-	return &callback.CardActionTriggerResponse{Toast: toast}, nil
+
+	return &callback.CardActionTriggerResponse{Card: card}, nil
 
 }
 

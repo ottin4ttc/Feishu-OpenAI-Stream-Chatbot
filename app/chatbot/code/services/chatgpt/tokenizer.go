@@ -1,8 +1,8 @@
 package chatgpt
 
 import (
+	"github.com/ottin4ttc/go-openai"
 	"github.com/pandodao/tokenizer-go"
-	"github.com/sashabaranov/go-openai"
 	"strings"
 )
 
