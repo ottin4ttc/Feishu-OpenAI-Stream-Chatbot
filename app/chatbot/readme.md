@@ -91,7 +91,7 @@ cd Feishu-OpenAI-Stream-Chatbot/code
 
 ```bash
 # 配置config.yaml
-mv config.example.yaml config.yaml
+mv config.example.yaml config_int.yaml
 
 //测试部署
 go run main.go
@@ -127,7 +127,7 @@ cd feishu-chatgpt/code
 
 ```bash
 # 配置config.yaml
-mv config.example.yaml config.yaml
+mv config.example.yaml config_int.yaml
 # 安装severless cli
 npm install @serverless-devs/s -g
 ```

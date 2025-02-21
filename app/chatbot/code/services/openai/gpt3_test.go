@@ -7,7 +7,7 @@ import (
 )
 
 func TestCompletions(t *testing.T) {
-	config := initialization.LoadConfig("../../config.yaml")
+	config := initialization.LoadConfig("../../config_int.yaml")
 
 	msgs := []Messages{
 		{Role: "system", Content: "你是一个专业的翻译官，负责中英文翻译。"},
@@ -25,7 +25,7 @@ func TestCompletions(t *testing.T) {
 }
 
 func TestGenerateOneImage(t *testing.T) {
-	config := initialization.LoadConfig("../../config.yaml")
+	config := initialization.LoadConfig("../../config_int.yaml")
 	gpt := NewChatGPT(*config)
 	prompt := "a red apple"
 	size := "256x256"
@@ -39,7 +39,7 @@ func TestGenerateOneImage(t *testing.T) {
 }
 
 func TestAudioToText(t *testing.T) {
-	config := initialization.LoadConfig("../../config.yaml")
+	config := initialization.LoadConfig("../../config_int.yaml")
 	gpt := NewChatGPT(*config)
 	audio := "./test_file/test.wav"
 	text, err := gpt.AudioToText(audio)
@@ -54,7 +54,7 @@ func TestAudioToText(t *testing.T) {
 }
 
 func TestVariateOneImage(t *testing.T) {
-	config := initialization.LoadConfig("../../config.yaml")
+	config := initialization.LoadConfig("../../config_int.yaml")
 	gpt := NewChatGPT(*config)
 	image := "./test_file/img.png"
 	size := "256x256"
@@ -81,7 +81,7 @@ func TestVariateOneImage(t *testing.T) {
 }
 
 func TestVariateOneImageWithJpg(t *testing.T) {
-	config := initialization.LoadConfig("../../config.yaml")
+	config := initialization.LoadConfig("../../config_int.yaml")
 	gpt := NewChatGPT(*config)
 	image := "./test_file/test.jpg"
 	size := "256x256"
@@ -110,7 +110,7 @@ func TestVariateOneImageWithJpg(t *testing.T) {
 
 // 余额接口已经被废弃
 func TestChatGPT_GetBalance(t *testing.T) {
-	config := initialization.LoadConfig("../../config.yaml")
+	config := initialization.LoadConfig("../../config_int.yaml")
 	gpt := NewChatGPT(*config)
 	balance, err := gpt.GetBalance()
 	if err != nil {
