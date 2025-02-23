@@ -1,17 +1,17 @@
 package main
 
 import (
+	"ai-chatbot/dal/dsDb"
+	"ai-chatbot/handlers"
+	"ai-chatbot/initialization"
+	"ai-chatbot/services/openai"
+	"ai-chatbot/utils"
 	"context"
 	"fmt"
 	"github.com/ottin4ttc/go_common/db"
 	"io"
 	"log"
 	"os"
-	"start-feishubot/dal/dsDb"
-	"start-feishubot/handlers"
-	"start-feishubot/initialization"
-	"start-feishubot/services/openai"
-	"start-feishubot/utils"
 
 	larkcore "github.com/larksuite/oapi-sdk-go/v3/core"
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"

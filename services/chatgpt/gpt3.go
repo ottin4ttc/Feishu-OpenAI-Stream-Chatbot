@@ -1,12 +1,12 @@
 package chatgpt
 
 import (
+	"ai-chatbot/initialization"
+	customOpenai "ai-chatbot/services/openai"
 	"context"
 	"errors"
 	"fmt"
 	"io"
-	"start-feishubot/initialization"
-	customOpenai "start-feishubot/services/openai"
 
 	"github.com/ottin4ttc/go-openai"
 )

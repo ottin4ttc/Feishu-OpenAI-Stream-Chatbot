@@ -1,12 +1,12 @@
 package handlers
 
 import (
+	"ai-chatbot/initialization"
+	"ai-chatbot/services/openai"
+	"ai-chatbot/utils"
 	"context"
 	"fmt"
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
-	"start-feishubot/initialization"
-	"start-feishubot/services/openai"
-	"start-feishubot/utils"
 )
 
 type MsgInfo struct {
