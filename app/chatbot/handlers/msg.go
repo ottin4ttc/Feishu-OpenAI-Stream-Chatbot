@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"ai-chatbot/initialization"
+	"ai-chatbot/services"
+	"ai-chatbot/services/openai"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -9,9 +12,6 @@ import (
 	"github.com/google/uuid"
 	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
-	"start-feishubot/initialization"
-	"start-feishubot/services"
-	"start-feishubot/services/openai"
 )
 
 type CardKind string
@@ -659,7 +659,7 @@ func sendOnProcessCard(ctx context.Context,
 func updateTextCard(ctx context.Context, msg string,
 	msgId *string) error {
 	newCard, _ := newSendCardWithOutHeader(
-		withMainText(msg),
+		withMainMd(msg),
 		withNote("正在生成，请稍等..."))
 	err := PatchCard(ctx, msgId, newCard)
 	if err != nil {

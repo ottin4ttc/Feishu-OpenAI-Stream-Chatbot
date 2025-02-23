@@ -1,8 +1,8 @@
 package accesscontrol
 
 import (
-	"start-feishubot/initialization"
-	"start-feishubot/utils"
+	"ai-chatbot/initialization"
+	"ai-chatbot/utils"
 	"sync"
 )
 

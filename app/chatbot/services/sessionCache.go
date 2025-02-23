@@ -1,8 +1,8 @@
 package services
 
 import (
+	"ai-chatbot/services/openai"
 	"encoding/json"
-	"start-feishubot/services/openai"
 	"time"
 
 	"github.com/patrickmn/go-cache"

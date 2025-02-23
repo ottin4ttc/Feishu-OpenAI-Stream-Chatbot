@@ -1,8 +1,8 @@
 package dsDb
 
 import (
+	"ai-chatbot/model"
 	"context"
-	"start-feishubot/model"
 
 	"gorm.io/gorm"
 )

@@ -39,4 +39,4 @@ ACCESS_CONTROL_ENABLE: false
 ACCESS_CONTROL_MAX_COUNT_PER_USER_PER_DAY: 0
 
 ## 数据库配置
-DSN: "postgres://ottin_core:ottinPassword@pgm-bp1p1604opms9mb9fo.pg.rds.aliyuncs.com:5432/ottin_core?sslmode=disable"
+DSN: "postgres://ottin_core:ottinPassword@pgm-bp1p1604opms9mb9fo.pg.rds.aliyuncs.com:5432/ottin_core_pre?sslmode=disable"

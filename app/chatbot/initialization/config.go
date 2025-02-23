@@ -54,7 +54,7 @@ func GetConfig() *Config {
 	if env == "prod" {
 		cfg = "./config_int.yaml"
 	} else {
-		cfg = "./config.yaml"
+		cfg = "./config_prod.yaml"
 	}
 
 	once.Do(func() {

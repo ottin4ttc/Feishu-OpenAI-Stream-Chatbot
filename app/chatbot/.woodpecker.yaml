@@ -1,0 +1,29 @@
+when:
+  - branch: [int, release]
+
+steps:
+  - name: build
+    image: golang:1.22
+    volumes:
+      - /tmp/cache:/go/pkg
+    commands:
+      - go mod download -x
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -gcflags "all=-N -l" -o ai-chatbot .
+    when:
+      - branch: [int, release]
+  - name: deploy_int
+    image: docker:27.3.1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - /root/deploy.sh ubuntu@71.132.58.117 ai-chatbot int
+    when:
+      - branch: int
+  - name: deploy_prod
+    image: docker:27.3.1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - /root/deploy.sh ubuntu@140.179.166.88 ai-chatbot prod
+    when:
+      - branch: release

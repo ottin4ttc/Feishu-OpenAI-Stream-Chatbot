@@ -1,6 +1,8 @@
 package openai
 
 import (
+	"ai-chatbot/initialization"
+	"ai-chatbot/services/loadbalancer"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -9,8 +11,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"start-feishubot/initialization"
-	"start-feishubot/services/loadbalancer"
 	"strings"
 	"time"
 )
