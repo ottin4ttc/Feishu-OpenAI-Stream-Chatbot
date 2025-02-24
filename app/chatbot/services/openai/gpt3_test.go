@@ -1,8 +1,8 @@
 package openai
 
 import (
+	"ai-chatbot/initialization"
 	"fmt"
-	"start-feishubot/initialization"
 	"testing"
 )
 
