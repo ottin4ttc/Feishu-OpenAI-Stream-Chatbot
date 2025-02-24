@@ -6,7 +6,7 @@ APP_SECRET: aeNtD86gyYHWRwcXkPpYrdg0WELUOcVO
 APP_ENCRYPT_KEY: L8KbuepFYWb2mMiuEx1O4fvh2gK6SLu6
 APP_VERIFICATION_TOKEN: JMnJkMgy3KYZgYq1OhqFLcTiJbDkA7JI
 # 请确保和飞书应用管理平台中的设置一致。这里建议直接用 Feishu-OpenAI-Stream-Chatbot 作为机器人名称，这样的话，如果你有多个bot就好区分
-BOT_NAME: 万能小T
+BOT_NAME: DeepSeek-小麦
 UNION_ID: on_f3a91dc9fa6a5837f9c8f7c03c08a2
 # openAI key 支持负载均衡 可以填写多个key 用逗号分隔
 OPENAI_KEY: e019a061-1381-41e2-8bf3-d1c0ad88b8e6
