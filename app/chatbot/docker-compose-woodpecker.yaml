@@ -1,0 +1,9 @@
+version: '3.3'
+services:
+  ai-chatbot:
+    container_name: ai-chatbot
+    image: ${APP_IMAGE}
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - ENV=${ENV:-dev}

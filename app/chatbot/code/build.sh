@@ -1,1 +1,0 @@
-go build && ENV=prod  ./start-feishubot

@@ -1,0 +1,1 @@
+go build && ENV=prod  ./ai-chatbot
