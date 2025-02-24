@@ -67,8 +67,9 @@ func (e *VolcEngine) StreamChatWithHistory(ctx context.Context, msg []*model.Cha
 		}
 		if len(response.Choices) > 0 {
 			if response.References != nil {
-				for _, ref := range response.References {
-					refStream <- fmt.Sprintf("[%s](%s)\n", ref.Title, ref.Url)
+				for i, ref := range response.References {
+					num := i + 1
+					refStream <- fmt.Sprintf("[%d][%s](%s)\n", num, ref.Title, ref.Url)
 				}
 			}
 			if response.Choices[0].Delta.ReasoningContent != nil {
