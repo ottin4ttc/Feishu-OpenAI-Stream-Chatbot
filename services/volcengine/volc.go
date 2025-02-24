@@ -56,7 +56,6 @@ func (e *VolcEngine) StreamChatWithHistory(ctx context.Context, msg []*model.Cha
 		fmt.Errorf("CreateBotChatCompletionStream returned error: %v", err)
 	}
 	defer stream.Close()
-	//isInReasoningContent := false
 	for {
 		response, err := stream.Recv()
 		if errors.Is(err, io.EOF) {

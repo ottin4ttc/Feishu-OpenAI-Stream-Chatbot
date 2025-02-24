@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"ai-chatbot/dal/dsDb/cache"
 	"ai-chatbot/initialization"
 	"ai-chatbot/services"
 	"ai-chatbot/services/openai"
@@ -661,13 +662,13 @@ func sendOnProcessCard(ctx context.Context,
 func sendOnProcessCardV2(ctx context.Context,
 	sessionId *string, msgId *string) (*string, error) {
 	cardId := createAiCard(ctx)
-	id, err := replyCardWithBackId(ctx, msgId, fmt.Sprintf(`{ "type": "card","data": {
+	msgId, err := replyCardWithBackId(ctx, msgId, fmt.Sprintf(`{ "type": "card","data": {
         "card_id": "%s"
     }}`, *cardId))
 	if err != nil {
 		return nil, err
 	}
-	return id, nil
+	return cardId, nil
 }
 
 func createAiCard(ctx context.Context) *string {
@@ -682,10 +683,10 @@ func createAiCard(ctx context.Context) *string {
         "streaming_mode": true,
         "streaming_config": {
             "print_step": {
-                "default": 4
+                "default": 1
             },
             "print_frequency_ms": {
-                "default": 70
+                "default": 60
             },
             "print_strategy": "fast"
         },
@@ -701,23 +702,15 @@ func createAiCard(ctx context.Context) *string {
     },
     "body": {
         "direction": "vertical",
-        "horizontal_spacing": "8px",
-        "vertical_spacing": "8px",
-        "horizontal_align": "left",
-        "vertical_align": "top",
         "padding": "12px 12px 12px 12px",
         "elements": [
             {
                 "tag": "markdown",
                 "content": "",
                 "text_align": "left",
-                "text_size": "normal_v2",
+                "text_size": "notation",
                 "margin": "0px 0px 0px 0px",
                 "element_id": "think"
-            },
-            {
-                "tag": "hr",
-                "margin": "0px 0px 0px 0px"
             },
             {
                 "tag": "markdown",
@@ -726,10 +719,6 @@ func createAiCard(ctx context.Context) *string {
                 "text_size": "normal_v2",
                 "margin": "0px 0px 0px 0px",
                 "element_id": "answer"
-            },
-            {
-                "tag": "hr",
-                "margin": "0px 0px 0px 0px"
             },
             {
                 "tag": "markdown",
@@ -772,35 +761,77 @@ func updateTextCard(ctx context.Context, msg string,
 	return nil
 }
 
-func updateTextCardV2(ctx context.Context, msg string, cardId *string, elementId string) error {
+func updateTextCardV2(ctx context.Context, update CardUpdateMessage, cardId *string) error {
+	var resp *larkcardkit.ContentCardElementResp
+	var err error
+	needRequest := false
+	seq := cache.GetCardCache().GetSequence(*cardId)
+	seq++
 	client := initialization.GetLarkClient()
-	req := larkcardkit.NewContentCardElementReqBuilder().
-		CardId(*cardId).
-		ElementId(`elem_63529372`).
-		Body(larkcardkit.NewContentCardElementReqBodyBuilder().
-			Uuid(`191857678434`).
-			Content(`这是更新后的文本内容。将以打字机式的效果输出`).
-			Sequence(1).
-			Build()).
-		Build()
-
-	// 发起请求
-	resp, err := client.Cardkit.V1.CardElement.Content(context.Background(), req)
-
+	// 创建请求对象
+	if update.think != "" {
+		req := larkcardkit.NewContentCardElementReqBuilder().
+			CardId(*cardId).
+			ElementId(`think`).
+			Body(larkcardkit.NewContentCardElementReqBodyBuilder().
+				Uuid(uuid.New().String()).
+				Content(update.think).
+				Sequence(seq).
+				Build()).
+			Build()
+		// 发起请求
+		resp, err = client.Cardkit.V1.CardElement.Content(ctx, req)
+		seq++
+		needRequest = true
+	}
+	if update.answer != "" {
+		// 创建请求对象
+		req := larkcardkit.NewContentCardElementReqBuilder().
+			CardId(*cardId).
+			ElementId(`answer`).
+			Body(larkcardkit.NewContentCardElementReqBodyBuilder().
+				Uuid(uuid.New().String()).
+				Content(update.answer).
+				Sequence(seq).
+				Build()).
+			Build()
+		// 发起请求
+		resp, err = client.Cardkit.V1.CardElement.Content(ctx, req)
+		seq++
+		needRequest = true
+	}
+	if update.ref != "" {
+		// 创建请求对象
+		req := larkcardkit.NewContentCardElementReqBuilder().
+			CardId(*cardId).
+			ElementId(`reference`).
+			Body(larkcardkit.NewContentCardElementReqBodyBuilder().
+				Uuid(uuid.New().String()).
+				Content(update.ref).
+				Sequence(seq).
+				Build()).
+			Build()
+		// 发起请求
+		resp, err = client.Cardkit.V1.CardElement.Content(ctx, req)
+		needRequest = true
+	}
+	if !needRequest {
+		return nil
+	}
 	// 处理错误
 	if err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 
 	// 服务端错误处理
 	if !resp.Success() {
 		fmt.Printf("logId: %s, error response: \n%s", resp.RequestId(), larkcore.Prettify(resp.CodeError))
-		return
+		return errors.New("update failed")
 	}
-
-	// 业务处理
-	fmt.Println(larkcore.Prettify(resp))
+	seq++
+	cache.GetCardCache().UpdateSequence(*cardId, seq)
+	return nil
 }
 
 func updateFinalCard(
@@ -821,7 +852,7 @@ func sendHelpCard(ctx context.Context,
 	sessionId *string, msgId *string) {
 	newCard, _ := newSendCard(
 		withHeader("🎒需要帮助吗？", larkcard.TemplateBlue),
-		withMainMd("**我是具备打字机效果的聊天机器人！**"),
+		withMainMd("**我是 TTC 专享 DeepSeek 联网大模型机器人！**"),
 		withSplitLine(),
 		withMdAndExtraBtn(
 			"** 🆑 清除话题上下文**\n文本回复 *清除* 或 */clear*",
