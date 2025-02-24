@@ -10,7 +10,6 @@ require (
 	github.com/duke-git/lancet/v2 v2.1.17
 	github.com/gin-gonic/gin v1.8.2
 	github.com/google/uuid v1.4.0
-	github.com/json-iterator/go v1.1.12
 	github.com/k0kubun/pp/v3 v3.2.0
 	github.com/ottin4ttc/go-openai v0.0.0-20250221062426-d27341820d1c
 	github.com/ottin4ttc/go_common v0.0.0-20250221081328-b593bd9c45d2
@@ -51,6 +50,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
