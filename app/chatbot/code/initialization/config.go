@@ -52,9 +52,9 @@ func GetConfig() *Config {
 	env := os.Getenv("ENV")
 	cfg := ""
 	if env == "prod" {
-		cfg = "./config_int.yaml"
+		cfg = "./config_prod.yaml"
 	} else {
-		cfg = "./config.yaml"
+		cfg = "./config_int.yaml"
 	}
 
 	once.Do(func() {
