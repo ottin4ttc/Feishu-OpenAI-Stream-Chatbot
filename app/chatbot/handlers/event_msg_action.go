@@ -24,6 +24,12 @@ type MessageAction struct { /*消息*/
 	volc *volcengine.VolcEngine
 }
 
+type CardUpdateMessage struct {
+	think  string
+	ref    string
+	answer string
+}
+
 func (m *MessageAction) Execute(a *ActionInfo) bool {
 
 	// Add access control
@@ -42,19 +48,22 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 		return false
 	}
 
-	answer := ""
+	thinkingAnswer := ""
+	referenceAnswer := ""
+	streamAnswer := ""
+
 	refStream := make(chan string)
 	thinkStream := make(chan string)
 	answerResponseStream := make(chan string)
-	done := make(chan struct{}) // 添加 done 信号，保证 goroutine 正确退出
+	done := make(chan struct{})
+
 	noContentTimeout := time.AfterFunc(10*time.Second, func() {
 		pp.Println("no content timeout")
 		close(done)
-		err := updateFinalCard(*a.ctx, "请求超时", cardId)
+		err := updateTextCardV2(*a.ctx, CardUpdateMessage{answer: "请求超时"}, cardId)
 		if err != nil {
 			return
 		}
-		return
 	})
 	defer noContentTimeout.Stop()
 	msg := a.handler.sessionCache.GetMsg(*a.info.sessionId)
@@ -64,7 +73,7 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				err := updateFinalCard(*a.ctx, "聊天失败", cardId)
+				err := updateTextCardV2(*a.ctx, CardUpdateMessage{answer: "聊天失败"}, cardId)
 				if err != nil {
 					printErrorMessage(a, msg, err)
 					return
@@ -75,7 +84,7 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 		//log.Printf("UserId: %s , Request: %s", a.info.userId, msg)
 
 		if err := m.volc.StreamChat(*a.ctx, msg, thinkStream, answerResponseStream, refStream); err != nil {
-			err := updateFinalCard(*a.ctx, "聊天失败", cardId)
+			err := updateTextCardV2(*a.ctx, CardUpdateMessage{answer: "聊天失败"}, cardId)
 			if err != nil {
 				printErrorMessage(a, msg, err)
 				return
@@ -86,14 +95,19 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 		close(done) // 关闭 done 信号
 	}()
 	ticker := time.NewTicker(700 * time.Millisecond)
-	defer ticker.Stop() // 注意在函数结束时停止 ticker
+	defer ticker.Stop()
 	go func() {
 		for {
 			select {
 			case <-done:
 				return
 			case <-ticker.C:
-				err := updateTextCardV2(*a.ctx, answer, cardId)
+				updateMsg := CardUpdateMessage{
+					think: thinkingAnswer,
+					//ref:    referenceAnswer,
+					answer: streamAnswer,
+				}
+				err := updateTextCardV2(*a.ctx, updateMsg, cardId)
 				if err != nil {
 					printErrorMessage(a, msg, err)
 					return
@@ -104,24 +118,42 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 
 	for {
 		select {
-		case res, ok := <-chatResponseStream:
+		case think, ok := <-thinkStream:
 			if !ok {
-				return false
+				continue
 			}
 			noContentTimeout.Stop()
-			answer += res
-		case <-done: // 添加 done 信号的处理
-			err := updateFinalCard(*a.ctx, answer, cardId)
+			thinkingAnswer += think
+		case ref, ok := <-refStream:
+			if !ok {
+				continue
+			}
+			noContentTimeout.Stop()
+			referenceAnswer += ref
+		case res, ok := <-answerResponseStream:
+			if !ok {
+				continue
+			}
+			noContentTimeout.Stop()
+			streamAnswer += res
+		case <-done:
+			updateMsg := CardUpdateMessage{
+				think:  thinkingAnswer,
+				ref:    referenceAnswer,
+				answer: streamAnswer,
+			}
+			err := updateTextCardV2(*a.ctx, updateMsg, cardId)
 			if err != nil {
 				printErrorMessage(a, msg, err)
 				return false
 			}
 			ticker.Stop()
-			msg := append(msg, openai.Messages{
-				Role: "assistant", Content: answer,
+			combinedAnswer := thinkingAnswer + "\n" + streamAnswer + "\n" + referenceAnswer
+			msg = append(msg, openai.Messages{
+				Role: "assistant", Content: combinedAnswer,
 			})
 			a.handler.sessionCache.SetMsg(*a.info.sessionId, msg)
-			close(chatResponseStream)
+
 			//if new topic
 			//if len(msg) == 2 {
 			//	//fmt.Println("new topic", msg[1].Content)
@@ -131,7 +163,7 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 
 			jsonByteArray, err := json.Marshal(msg)
 			if err != nil {
-				log.Printf("Error marshaling JSON request: UserId: %s , Request: %s , Response: %s", a.info.userId, jsonByteArray, answer)
+				log.Printf("Error marshaling JSON request: UserId: %s , Request: %s , Response: %s", a.info.userId, jsonByteArray, combinedAnswer)
 			}
 			jsonStr := strings.ReplaceAll(string(jsonByteArray), "\\n", "")
 			jsonStr = strings.ReplaceAll(jsonStr, "\n", "")
@@ -163,7 +195,7 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 				SendType: askMessage.SendType,
 				ChatType: askMessage.ChatType,
 				ChatID:   askMessage.ChatID,
-				Content:  answer,
+				Content:  combinedAnswer,
 				RootID:   askMessage.RootID,
 				ParentID: askMessage.MessageID,
 			}
@@ -173,7 +205,7 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 				printErrorMessage(a, msg, err)
 			} else {
 				log.Printf("Success request plain jsonStr: UserId: %s , Request: %s , Response: %s",
-					a.info.userId, jsonStr, answer)
+					a.info.userId, jsonStr, combinedAnswer)
 			}
 			return false
 		}
