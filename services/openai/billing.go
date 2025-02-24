@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-//https://api.openai.com/dashboard/billing/credit_grants
+// https://api.openai.com/dashboard/billing/credit_grants
 type Billing struct {
 	Object         string  `json:"object"`
 	TotalGranted   float64 `json:"total_granted"`
