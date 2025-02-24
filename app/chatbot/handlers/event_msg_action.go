@@ -5,8 +5,8 @@ import (
 	"ai-chatbot/initialization"
 	"ai-chatbot/model"
 	"ai-chatbot/services/accesscontrol"
-	"ai-chatbot/services/chatgpt"
 	"ai-chatbot/services/openai"
+	"ai-chatbot/services/volcengine"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -20,7 +20,8 @@ import (
 )
 
 type MessageAction struct { /*消息*/
-	chatgpt *chatgpt.ChatGPT
+	//chatgpt *chatgpt.ChatGPT
+	volc *volcengine.VolcEngine
 }
 
 func (m *MessageAction) Execute(a *ActionInfo) bool {
@@ -42,7 +43,9 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 	}
 
 	answer := ""
-	chatResponseStream := make(chan string)
+	refStream := make(chan string)
+	thinkStream := make(chan string)
+	answerResponseStream := make(chan string)
 	done := make(chan struct{}) // 添加 done 信号，保证 goroutine 正确退出
 	noContentTimeout := time.AfterFunc(10*time.Second, func() {
 		pp.Println("no content timeout")
@@ -71,7 +74,7 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 
 		//log.Printf("UserId: %s , Request: %s", a.info.userId, msg)
 
-		if err := m.chatgpt.StreamChat(*a.ctx, msg, chatResponseStream); err != nil {
+		if err := m.volc.StreamChat(*a.ctx, msg, thinkStream, answerResponseStream, refStream); err != nil {
 			err := updateFinalCard(*a.ctx, "聊天失败", cardId)
 			if err != nil {
 				printErrorMessage(a, msg, err)
@@ -90,7 +93,7 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 			case <-done:
 				return
 			case <-ticker.C:
-				err := updateTextCard(*a.ctx, answer, cardId)
+				err := updateTextCardV2(*a.ctx, answer, cardId)
 				if err != nil {
 					printErrorMessage(a, msg, err)
 					return
@@ -183,7 +186,7 @@ func printErrorMessage(a *ActionInfo, msg []openai.Messages, err error) {
 
 func sendOnProcess(a *ActionInfo) (*string, error) {
 	// send 正在处理中
-	cardId, err := sendOnProcessCard(*a.ctx, a.info.sessionId, a.info.msgId)
+	cardId, err := sendOnProcessCardV2(*a.ctx, a.info.sessionId, a.info.msgId)
 	if err != nil {
 		return nil, err
 	}
