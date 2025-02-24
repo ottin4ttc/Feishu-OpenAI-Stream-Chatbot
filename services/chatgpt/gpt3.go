@@ -21,8 +21,11 @@ type ChatGPT struct {
 }
 
 type Gpt3 interface {
-	StreamChat() error
-	StreamChatWithHistory() error
+	StreamChat(ctx context.Context,
+		msg []customOpenai.Messages,
+		responseStream chan string) error
+	StreamChatWithHistory(ctx context.Context, msg []openai.ChatCompletionMessage, maxTokens int,
+		responseStream chan string) error
 }
 
 func NewGpt3(config *initialization.Config) *ChatGPT {

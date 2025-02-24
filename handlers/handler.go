@@ -3,8 +3,8 @@ package handlers
 import (
 	"ai-chatbot/initialization"
 	"ai-chatbot/services"
-	"ai-chatbot/services/chatgpt"
 	"ai-chatbot/services/openai"
+	"ai-chatbot/services/volcengine"
 	"context"
 	"fmt"
 	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
@@ -99,7 +99,7 @@ func (m MessageHandler) msgReceivedHandler(ctx context.Context, event *larkim.P2
 		&HelpAction{},            //帮助处理
 		&RolePlayAction{},        //角色扮演处理
 		&MessageAction{
-			chatgpt: chatgpt.NewGpt3(&m.config),
+			volc: volcengine.NewVolcEngine(&m.config),
 		}, //消息处理
 	}
 

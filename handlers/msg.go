@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
+	larkcore "github.com/larksuite/oapi-sdk-go/v3/core"
+	larkcardkit "github.com/larksuite/oapi-sdk-go/v3/service/cardkit/v1"
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 )
 
@@ -656,10 +658,112 @@ func sendOnProcessCard(ctx context.Context,
 	return id, nil
 }
 
+func sendOnProcessCardV2(ctx context.Context,
+	sessionId *string, msgId *string) (*string, error) {
+	cardId := createAiCard(ctx)
+	id, err := replyCardWithBackId(ctx, msgId, fmt.Sprintf(`{ "type": "card","data": {
+        "card_id": "%s"
+    }}`, *cardId))
+	if err != nil {
+		return nil, err
+	}
+	return id, nil
+}
+
+func createAiCard(ctx context.Context) *string {
+	client := initialization.GetLarkClient()
+	req := larkcardkit.NewCreateCardReqBuilder().
+		Body(larkcardkit.NewCreateCardReqBodyBuilder().
+			Type(`card_json`).
+			Data(`{
+    "schema": "2.0",
+    "config": {
+        "update_multi": true,
+        "streaming_mode": true,
+        "streaming_config": {
+            "print_step": {
+                "default": 4
+            },
+            "print_frequency_ms": {
+                "default": 70
+            },
+            "print_strategy": "fast"
+        },
+        "style": {
+            "text_size": {
+                "normal_v2": {
+                    "default": "normal",
+                    "pc": "normal",
+                    "mobile": "heading"
+                }
+            }
+        }
+    },
+    "body": {
+        "direction": "vertical",
+        "horizontal_spacing": "8px",
+        "vertical_spacing": "8px",
+        "horizontal_align": "left",
+        "vertical_align": "top",
+        "padding": "12px 12px 12px 12px",
+        "elements": [
+            {
+                "tag": "markdown",
+                "content": "",
+                "text_align": "left",
+                "text_size": "normal_v2",
+                "margin": "0px 0px 0px 0px",
+                "element_id": "think"
+            },
+            {
+                "tag": "hr",
+                "margin": "0px 0px 0px 0px"
+            },
+            {
+                "tag": "markdown",
+                "content": "",
+                "text_align": "left",
+                "text_size": "normal_v2",
+                "margin": "0px 0px 0px 0px",
+                "element_id": "answer"
+            },
+            {
+                "tag": "hr",
+                "margin": "0px 0px 0px 0px"
+            },
+            {
+                "tag": "markdown",
+                "content": "",
+                "text_align": "left",
+                "text_size": "normal_v2",
+                "margin": "0px 0px 0px 0px",
+                "element_id": "reference"
+            }
+        ]
+    }
+}`).
+			Build()).
+		Build()
+	// 发起请求
+	resp, err := client.Cardkit.V1.Card.Create(ctx, req)
+
+	// 处理错误
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	// 服务端错误处理
+	if !resp.Success() {
+		fmt.Printf("logId: %s, error response: \n%s", resp.RequestId(), larkcore.Prettify(resp.CodeError))
+		return nil
+	}
+	return resp.Data.CardId
+}
+
 func updateTextCard(ctx context.Context, msg string,
 	msgId *string) error {
 	newCard, _ := newSendCardWithOutHeader(
-		withMainMd(msg),
+		withMainText(msg),
 		withNote("正在生成，请稍等..."))
 	err := PatchCard(ctx, msgId, newCard)
 	if err != nil {
@@ -667,6 +771,38 @@ func updateTextCard(ctx context.Context, msg string,
 	}
 	return nil
 }
+
+func updateTextCardV2(ctx context.Context, msg string, cardId *string, elementId string) error {
+	client := initialization.GetLarkClient()
+	req := larkcardkit.NewContentCardElementReqBuilder().
+		CardId(*cardId).
+		ElementId(`elem_63529372`).
+		Body(larkcardkit.NewContentCardElementReqBodyBuilder().
+			Uuid(`191857678434`).
+			Content(`这是更新后的文本内容。将以打字机式的效果输出`).
+			Sequence(1).
+			Build()).
+		Build()
+
+	// 发起请求
+	resp, err := client.Cardkit.V1.CardElement.Content(context.Background(), req)
+
+	// 处理错误
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// 服务端错误处理
+	if !resp.Success() {
+		fmt.Printf("logId: %s, error response: \n%s", resp.RequestId(), larkcore.Prettify(resp.CodeError))
+		return
+	}
+
+	// 业务处理
+	fmt.Println(larkcore.Prettify(resp))
+}
+
 func updateFinalCard(
 	ctx context.Context,
 	msg string,
