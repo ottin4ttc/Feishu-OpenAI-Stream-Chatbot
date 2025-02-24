@@ -1,12 +1,14 @@
 package main
 
 import (
+	"ai-chatbot/dal/dsDb"
 	"ai-chatbot/handlers"
 	"ai-chatbot/initialization"
 	"ai-chatbot/services/openai"
 	"ai-chatbot/utils"
 	"context"
 	"fmt"
+	"github.com/ottin4ttc/go_common/db"
 	"io"
 	"log"
 	"os"
@@ -25,10 +27,10 @@ func main() {
 	initialization.InitRoleList()
 	pflag.Parse()
 	globalConfig := initialization.GetConfig()
-	// err := dsDb.InitAwsPostgreSQL(context.Background(), db.PostgreSQLConfig{DSN: globalConfig.Dsn})
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err := dsDb.InitAwsPostgreSQL(context.Background(), db.PostgreSQLConfig{DSN: globalConfig.Dsn})
+	if err != nil {
+		panic(err)
+	}
 
 	// 打印一下实际读取到的配置
 	//globalConfigPrettyString, _ := json.MarshalIndent(globalConfig, "", "    ")
@@ -59,7 +61,7 @@ func main() {
 		})
 	initialization.LoadLarkWsClient(*globalConfig, eventHandler)
 	initialization.LoadLarkClient(*globalConfig)
-	err := initialization.GetLarkWsClient().Start(context.Background())
+	err = initialization.GetLarkWsClient().Start(context.Background())
 	if err != nil {
 		panic(err)
 	}
