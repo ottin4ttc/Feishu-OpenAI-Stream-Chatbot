@@ -50,13 +50,7 @@ GetConfig will call LoadConfig once and return a global singleton, you should al
 */
 func GetConfig() *Config {
 	env := os.Getenv("ENV")
-	cfg := ""
-	if env == "prod" {
-		cfg = "./config_int.yaml"
-	} else {
-		cfg = "./config_prod.yaml"
-	}
-
+	cfg := fmt.Sprintf("./config_%s.yaml", env)
 	once.Do(func() {
 		config = LoadConfig(cfg)
 		config.Initialized = true
@@ -71,13 +65,11 @@ call this function directly
 */
 func LoadConfig(cfg string) *Config {
 	viper.SetConfigFile(cfg)
-	viper.ReadInConfig()
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
 	viper.AutomaticEnv()
-	//content, err := ioutil.ReadFile("config_int.yaml")
-	//if err != nil {
-	//	fmt.Println("Error reading file:", err)
-	//}
-	//fmt.Println(string(content))
 
 	config := &Config{
 		EnableLog:                          getViperBoolValue("ENABLE_LOG", false),

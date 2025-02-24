@@ -1,12 +1,17 @@
 package handlers
 
 import (
+	"ai-chatbot/dal/dsDb"
 	"ai-chatbot/initialization"
+	"ai-chatbot/model"
 	"ai-chatbot/services/accesscontrol"
 	"ai-chatbot/services/chatgpt"
 	"ai-chatbot/services/openai"
+	"context"
 	"encoding/json"
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/ottin4ttc/go_common/db"
 	"log"
 	"strings"
 	"time"
@@ -128,45 +133,45 @@ func (m *MessageAction) Execute(a *ActionInfo) bool {
 			jsonStr := strings.ReplaceAll(string(jsonByteArray), "\\n", "")
 			jsonStr = strings.ReplaceAll(jsonStr, "\n", "")
 			// // 将双向消息都存入数据库
-			// askMessage := &model.DsMessage{
-			// 	AppID:     a.messageEvent.EventV2Base.Header.AppID,
-			// 	TenantID:  a.messageEvent.EventV2Base.Header.TenantKey,
-			// 	UnionID:   *a.messageEvent.Event.Sender.SenderId.UnionId,
-			// 	UserID:    *a.messageEvent.Event.Sender.SenderId.UserId,
-			// 	SendType:  *a.messageEvent.Event.Sender.SenderType,
-			// 	MessageID: *a.messageEvent.Event.Message.MessageId,
-			// 	ChatID:    *a.messageEvent.Event.Message.ChatId,
-			// 	ChatType:  *a.messageEvent.Event.Message.ChatType,
-			// 	Content:   a.info.qParsed,
-			// }
-			// if a.messageEvent.Event.Message.RootId != nil {
-			// 	askMessage.RootID = *a.messageEvent.Event.Message.RootId
-			// }
-			// if a.messageEvent.Event.Message.ParentId != nil {
-			// 	askMessage.ParentID = *a.messageEvent.Event.Message.ParentId
-			// }
-			// jsonContent, _ := jsoniter.MarshalToString(a.messageEvent.Event)
-			// askMessage.EventJSON = jsonContent
-			// // reply
-			// replyMessage := &model.DsMessage{
-			// 	AppID:    a.messageEvent.EventV2Base.Header.AppID,
-			// 	TenantID: a.messageEvent.EventV2Base.Header.TenantKey,
-			// 	UnionID:  initialization.GetConfig().FeishuUnionId,
-			// 	SendType: askMessage.SendType,
-			// 	ChatType: askMessage.ChatType,
-			// 	ChatID:   askMessage.ChatID,
-			// 	Content:  answer,
-			// 	RootID:   askMessage.RootID,
-			// 	ParentID: askMessage.MessageID,
-			// }
-			// ctx := context.Background()
-			// err = dsDb.NewDsMessageDao(context.Background(), db.GetPostgreSQL(ctx)).BatchCreate([]*model.DsMessage{askMessage, replyMessage})
-			// if err != nil {
-			// 	printErrorMessage(a, msg, err)
-			// } else {
-			log.Printf("Success request plain jsonStr: UserId: %s , Request: %s , Response: %s",
-				a.info.userId, jsonStr, answer)
-			// }
+			askMessage := &model.DsMessage{
+				AppID:     a.messageEvent.EventV2Base.Header.AppID,
+				TenantID:  a.messageEvent.EventV2Base.Header.TenantKey,
+				UnionID:   *a.messageEvent.Event.Sender.SenderId.UnionId,
+				UserID:    *a.messageEvent.Event.Sender.SenderId.UserId,
+				SendType:  *a.messageEvent.Event.Sender.SenderType,
+				MessageID: *a.messageEvent.Event.Message.MessageId,
+				ChatID:    *a.messageEvent.Event.Message.ChatId,
+				ChatType:  *a.messageEvent.Event.Message.ChatType,
+				Content:   a.info.qParsed,
+			}
+			if a.messageEvent.Event.Message.RootId != nil {
+				askMessage.RootID = *a.messageEvent.Event.Message.RootId
+			}
+			if a.messageEvent.Event.Message.ParentId != nil {
+				askMessage.ParentID = *a.messageEvent.Event.Message.ParentId
+			}
+			jsonContent, _ := jsoniter.MarshalToString(a.messageEvent.Event)
+			askMessage.EventJSON = jsonContent
+			// reply
+			replyMessage := &model.DsMessage{
+				AppID:    a.messageEvent.EventV2Base.Header.AppID,
+				TenantID: a.messageEvent.EventV2Base.Header.TenantKey,
+				UnionID:  initialization.GetConfig().FeishuUnionId,
+				SendType: askMessage.SendType,
+				ChatType: askMessage.ChatType,
+				ChatID:   askMessage.ChatID,
+				Content:  answer,
+				RootID:   askMessage.RootID,
+				ParentID: askMessage.MessageID,
+			}
+			ctx := context.Background()
+			err = dsDb.NewDsMessageDao(context.Background(), db.GetPostgreSQL(ctx)).BatchCreate([]*model.DsMessage{askMessage, replyMessage})
+			if err != nil {
+				printErrorMessage(a, msg, err)
+			} else {
+				log.Printf("Success request plain jsonStr: UserId: %s , Request: %s , Response: %s",
+					a.info.userId, jsonStr, answer)
+			}
 			return false
 		}
 	}

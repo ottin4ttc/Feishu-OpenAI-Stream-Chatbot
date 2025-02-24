@@ -1,1 +1,1 @@
-go build && ENV=prod  ./start-feishubot
+go build && ENV=prod  ./ai-chatbot
