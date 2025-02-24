@@ -1,10 +1,10 @@
 package chatgpt
 
 import (
+	"ai-chatbot/initialization"
+	"ai-chatbot/services/openai"
 	"context"
 	"fmt"
-	"start-feishubot/initialization"
-	"start-feishubot/services/openai"
 	"testing"
 	"time"
 )
